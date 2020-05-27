@@ -3,6 +3,7 @@
 
 #include "Grabber.h"
 #include "DrawDebugHelpers.h"
+#include "WorldCollision.h"
 
 #define OUT
 
@@ -31,20 +32,15 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
     
-    // Get the player viewpoint this tick
+    /// Get the player viewpoint this tick
     FVector PlayerViewPointLocation;
     FRotator PlayerViewPointRotation;
     
-    // Method takes "out params" by ref and updates their values.
+    /// Method takes "out params" by ref and updates their values.
     GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-       OUT PlayerViewPointLocation,
-       OUT PlayerViewPointRotation
+        OUT PlayerViewPointLocation,
+        OUT PlayerViewPointRotation
     );
-    
-//    UE_LOG(LogTemp, Warning, TEXT("Location: %s, Rotation: %s"),
-//           *PlayerViewPointLocation.ToString(),
-//           *PlayerViewPointRotation.ToString()
-//    )
     
     FVector LineTraceEnd = PlayerViewPointLocation + (PlayerViewPointRotation.Vector() * Reach);
 
@@ -60,9 +56,23 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
         10.f
     );
     
-    // Ray-cast out to reach distance
+    /// Setup query parameters
+    // complex collission = false, ignore ourself (owner).
+    FCollisionQueryParams TraceParameters(FName(TEXT("")), false, GetOwner());
     
-    // See what we hit
+    /// Line Trace (Ray-cast) out to reach distance
+    FHitResult Hit;
+    GetWorld()->LineTraceSingleByObjectType(
+        OUT Hit,
+        PlayerViewPointLocation,
+        LineTraceEnd,
+        FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
+        TraceParameters
+    );
     
+    /// See what we hit
+    AActor* ActorHit = Hit.GetActor();
+    if (ActorHit)
+        UE_LOG(LogTemp, Warning, TEXT("We just hit %s"), *(ActorHit->GetName()))
 }
 
