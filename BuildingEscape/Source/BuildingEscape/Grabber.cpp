@@ -39,6 +39,7 @@ void UGrabber::BeginPlay()
         
         /// Bind the input action
         InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
+        InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
         
     } else {
         UE_LOG(LogTemp, Error, TEXT("%s missing the Input handle component"), *GetOwner()->GetName())
@@ -51,6 +52,10 @@ void UGrabber::Grab()
     UE_LOG(LogTemp, Warning, TEXT("Grab key pressed!"))
 }
 
+void UGrabber::Release()
+{
+    UE_LOG(LogTemp, Warning, TEXT("Grab key released!"))
+}
 
 // Called every frame
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
