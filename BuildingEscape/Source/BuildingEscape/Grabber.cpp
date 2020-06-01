@@ -13,8 +13,6 @@ UGrabber::UGrabber()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
 
@@ -22,16 +20,53 @@ UGrabber::UGrabber()
 void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
-    UE_LOG(LogTemp, Warning, TEXT("Grabber reporting for duty"))
+    
+    FindPhysicsHandleComponent();
+    SetupInputComponent();
+	
+}
 
-    /// Look for attached Physics Handler
+void UGrabber::Grab()
+{
+    UE_LOG(LogTemp, Warning, TEXT("Grab key pressed!"))
+    
+    /// LINE TRACE and see if we reach any actors with physics body collision channel set
+    GetFirstPhysicsBodyInReach();
+    
+    /// If we hit soemthing then attach a physics handle
+    /// TODO: attach physics handle
+}
+
+void UGrabber::Release()
+{
+    UE_LOG(LogTemp, Warning, TEXT("Grab key released!"))
+    /// TODO: Release the physics handle
+}
+
+// Called every frame
+void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+    
+    // if the physics handle is attached
+        // move the object that we are holding.
+}
+
+/// Look for attached Physics Handler
+void UGrabber::FindPhysicsHandleComponent()
+{
     PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
     if (PhysicsHandle) {
 
     } else {
         UE_LOG(LogTemp, Error, TEXT("%s missing Physics handle component"), *GetOwner()->GetName())
     }
-    
+}
+
+
+/// Look for attached Input Compinent (only appears at run time)
+void UGrabber::SetupInputComponent()
+{
     InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
     if (InputComponent)
     {
@@ -44,24 +79,10 @@ void UGrabber::BeginPlay()
     } else {
         UE_LOG(LogTemp, Error, TEXT("%s missing the Input handle component"), *GetOwner()->GetName())
     }
-	
 }
 
-void UGrabber::Grab()
+FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
 {
-    UE_LOG(LogTemp, Warning, TEXT("Grab key pressed!"))
-}
-
-void UGrabber::Release()
-{
-    UE_LOG(LogTemp, Warning, TEXT("Grab key released!"))
-}
-
-// Called every frame
-void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-    
     /// Get the player viewpoint this tick
     FVector PlayerViewPointLocation;
     FRotator PlayerViewPointRotation;
@@ -102,7 +123,9 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
     
     /// See what we hit
     AActor* ActorHit = Hit.GetActor();
-    if (ActorHit)
+    if (ActorHit) {
         UE_LOG(LogTemp, Warning, TEXT("We just hit %s"), *(ActorHit->GetName()))
+    }
+    
+    return Hit;
 }
-
