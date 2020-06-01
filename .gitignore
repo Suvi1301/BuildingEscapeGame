@@ -9,3 +9,8 @@ BuildingEscape/Content/StarterContent/
 
 # XCode files
 **/xcuserdata/
+
+# CLion files
+.idea/
+*/cmake-build-debug/
+BuildingEscape/CMakeLists.txt
