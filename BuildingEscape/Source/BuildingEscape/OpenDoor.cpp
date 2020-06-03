@@ -20,13 +20,21 @@ UOpenDoor::UOpenDoor()
 void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();
-    
     Owner = GetOwner();
+    
+    if (!Owner) {
+        UE_LOG(LogTemp, Warning, TEXT("Failed to get Owner in OpenDoor."), *Owner->GetName())
+    }
+    
+    if (!PressurePlate) {
+        UE_LOG(LogTemp, Warning, TEXT("%s Missing PressurePlate."), *Owner->GetName())
+    }
 }
 
 
 void UOpenDoor::OpenDoor()
 {
+    if (!Owner) { return; }
     // pitch, yaw, roll.
     Owner->SetActorRotation(FRotator(0.f, OpenAngle, 0.f));
 }
@@ -34,6 +42,7 @@ void UOpenDoor::OpenDoor()
 
 void UOpenDoor::CloseDoor()
 {
+    if (!Owner) { return; }
     Owner->SetActorRotation(FRotator(0.f, 0.f, 0.f));
 }
 
@@ -44,7 +53,7 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// Poll the Trigger Volume
-    if (GetTotalMassOfActorsOnPlate() > 30.f)
+    if (GetTotalMassOfActorsOnPlate() > TriggerMass)
     {
         OpenDoor();
         LastDoorOpenTime = GetWorld()->GetTimeSeconds();
@@ -62,16 +71,15 @@ float UOpenDoor::GetTotalMassOfActorsOnPlate() const
     
     // Find all the overlapping actors
     TArray<AActor*> ActorsOnPlate;
-    if (PressurePlate) {
-        PressurePlate->GetOverlappingActors(OUT ActorsOnPlate);
+    
+    if (!PressurePlate) { return TotalMass; }
+    
+    PressurePlate->GetOverlappingActors(OUT ActorsOnPlate);
 
-        // Iterate through them adding their masses.
-        for (const AActor* Actor : ActorsOnPlate) {
-            TotalMass += Actor->FindComponentByClass<UPrimitiveComponent>()->GetMass();
-            UE_LOG(LogTemp, Warning, TEXT("%s on pressure plate"), *Actor->GetName())
-        }
-    } else {
-        UE_LOG(LogTemp, Warning, TEXT("PressurePlate not set."))
+    // Iterate through them adding their masses.
+    for (const AActor* Actor : ActorsOnPlate) {
+        TotalMass += Actor->FindComponentByClass<UPrimitiveComponent>()->GetMass();
+        UE_LOG(LogTemp, Warning, TEXT("%s on pressure plate"), *Actor->GetName())
     }
     
     return TotalMass;
