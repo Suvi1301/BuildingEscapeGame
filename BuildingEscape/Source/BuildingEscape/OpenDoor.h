@@ -39,7 +39,11 @@ private:
     
     float LastDoorOpenTime;
     
-    AActor* ActorThatOpens;
-    AActor* Owner;
+//    UPROPERTY(EditAnywhere)
+//    float TriggerMass = 30.f;
     
+    AActor* Owner; // the owning door.
+    
+    // Returns total mass in Kilograms.
+    float GetTotalMassOfActorsOnPlate() const;
 };
